@@ -1,0 +1,22 @@
+main {
+  background-color: #f3f4f6; /* light gray */
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.sidebar-header img {
+  height: 40px;
+  margin: 5px;
+  transition: transform 0.3s;
+}
+.sidebar-header img:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    text-align: center;
+  }
+}
