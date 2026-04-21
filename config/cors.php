@@ -5,6 +5,7 @@ return [
     'allowed_methods' => ['*'],
     'allowed_origins' => [
         'https://quiet-nougat-3d7405.netlify.app',
+        'https://tssdapp.free.laravel.cloud',
     ],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],

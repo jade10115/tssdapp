@@ -15,7 +15,7 @@ return [
     |
     */
 
-  'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS')),
+  'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', 'quiet-nougat-3d7405.netlify.app')),
 
 
     /*
