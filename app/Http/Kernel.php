@@ -10,8 +10,7 @@ class Kernel extends HttpKernel
      * Global HTTP middleware stack.
      */
     protected $middleware = [
-        // \App\Http\Middleware\CorsMiddleware::class,
-           \Illuminate\Http\Middleware\HandleCors::class, 
+        \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\TrustHosts::class,
         \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
@@ -32,12 +31,12 @@ class Kernel extends HttpKernel
     \Illuminate\Routing\Middleware\SubstituteBindings::class,
 ],
 
-    'api' => [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        'throttle:api',
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        \App\Http\Middleware\CorsMiddleware::class,   // 👈 add this
-    ],
+'api' => [
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    'throttle:api',
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+],
+
     ];
 
     /**

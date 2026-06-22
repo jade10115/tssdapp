@@ -15,7 +15,10 @@ return [
     |
     */
 
-  'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', 'quiet-nougat-3d7405.netlify.app')),
+   'stateful' => [
+    'localhost:5173',
+    '127.0.0.1:5173',
+],
 
 
     /*

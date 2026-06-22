@@ -27,15 +27,10 @@ use App\Http\Controllers\TupadCashAdvanceController;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC ROUTES (No authentication required)
+| PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 Route::post('/login', [AuthController::class, 'login']);
-
-// Add a fallback login route to prevent redirect errors
-Route::get('/login', function () {
-    return response()->json(['message' => 'Unauthenticated'], 401);
-})->name('login');
 
 /*
 |--------------------------------------------------------------------------
@@ -67,19 +62,11 @@ Route::get('/division-breakdown', [DivisionController::class, 'getDivisionBreakd
 
 /*
 |--------------------------------------------------------------------------
-| DIVISION API (Public)
+| DIVISION API
 |--------------------------------------------------------------------------
 */
 Route::get('/divisions', [DivisionController::class, 'index']);
 Route::get('/divisions/{id}', [DivisionController::class, 'show']);
-
-/*
-|--------------------------------------------------------------------------
-| DASHBOARD (Make it public for testing CORS)
-|--------------------------------------------------------------------------
-*/
-// TEMPORARILY move dashboard outside auth to test CORS
-Route::get('/dashboard', [DashboardController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -134,6 +121,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/positions/{id}', [PositionController::class, 'update']);
     Route::delete('/positions/{id}', [PositionController::class, 'destroy']);
 
+    /* DASHBOARD */
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
     /* TUPAD */
     Route::apiResource('tupad_adl_masters', TupadAdlMasterController::class)->only(['index','store','update','destroy']);
     Route::apiResource('tupad_adl_details', TupadAdlDetailsController::class)->only(['index','store','show','update','destroy']);
@@ -183,6 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [TupadCashAdvanceController::class, 'show']);
         Route::put('/{id}', [TupadCashAdvanceController::class, 'update']);
         Route::delete('/{id}', [TupadCashAdvanceController::class, 'destroy']);
-        Route::get('/{id}/export-excel', [TupadCashAdvanceController::class, 'exportExcel']);
+         Route::get('/{id}/export-excel', [TupadCashAdvanceController::class, 'exportExcel']); // <-- new
+    Route::get('/{id}/export', [TupadCashAdvanceController::class, 'export']);            // optiona
     });
 });

@@ -11,9 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-        // Add ForceCors as the first middleware (runs before everything)
-        $middleware->prepend(\App\Http\Middleware\ForceCors::class);
+    ->withMiddleware(function (Middleware $middleware): void {
+        //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
