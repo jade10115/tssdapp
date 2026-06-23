@@ -1,12 +1,13 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "http://127.0.0.1:8000",
-  withCredentials: false,
-});
+// ✅ Automatically use the Render URL in production, or localhost in development
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
-// ✅ Automatically attach token
-api.interceptors.request.use((config) => {
+// ✅ Set to false because you are using Bearer tokens, not cookies! (Prevents CORS errors)
+axios.defaults.withCredentials = false;
+
+// ✅ Automatically attach token to EVERY request globally
+axios.interceptors.request.use((config) => {
   const token = localStorage.getItem("auth_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -15,7 +16,7 @@ api.interceptors.request.use((config) => {
 });
 
 // ✅ Auto logout on 401
-api.interceptors.response.use(
+axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
@@ -27,4 +28,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+export default axios;

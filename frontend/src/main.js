@@ -42,15 +42,11 @@ library.add(
   faUserPlus
 );
 
-// ✅ AXIOS CONFIG
-import axios from "axios";
+// ✅ Import our global Axios configuration (This runs the interceptors!)
+import "./axios.js"; 
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = API_BASE_URL;
-
-// =====================
+// ✅ Provide the API Base URL for your Vue components
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 const app = createApp(App);
 app.use(router);
