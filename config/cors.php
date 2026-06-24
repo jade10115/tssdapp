@@ -1,17 +1,27 @@
 <?php
 
 return [
+
     'paths' => ['api/*', 'login', 'logout', 'sanctum/csrf-cookie'],
+
     'allowed_methods' => ['*'],
-    
-    // Change this to allow all origins temporarily (or put your Vercel URL here)
-    'allowed_origins' => ['*'], 
-    
+
+    // 1. REMOVE the '*' wildcard. 
+    // 2. Add your EXACT Vercel URL (no trailing slash) and your local dev URL.
+    'allowed_origins' => [
+        'https://tssdappbackend.vercel.app', 
+        'http://localhost:5173', 
+        'http://localhost:3000'
+    ],
+
     'allowed_origins_patterns' => [],
+
     'allowed_headers' => ['*'],
+
     'exposed_headers' => [],
+
     'max_age' => 0,
-    
-    // Set this to false since you use Bearer tokens. If true, allowed_origins cannot be '*'
-    'supports_credentials' => false, 
+
+    'supports_credentials' => true,
+
 ];

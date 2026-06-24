@@ -1,35 +1,35 @@
 <template>
-  <div class="login-page" :style="{ background: `url(${doleOutsideBg}) no-repeat center center / cover` }">
-    <div class="overlay"></div>
+<div class="login-page" :style="{ background: `url(${doleOutsideBg}) no-repeat center center / cover` }">
+  <div class="overlay"></div>
 
-    <div class="card login-card">
-      <div class="header">
-        <div class="logos">
-          <img :src="doleLogo" alt="DOLE Logo" class="logo" />
-          <img :src="bagongphlogo" alt="Bagong PH Logo" class="logo" />
-        </div>
-        <h5 class="fw">Department of Labor and Employment</h5>
+  <div class="card login-card">
+    <div class="header">
+      <div class="logos">
+        <img :src="doleLogo" alt="DOLE Logo" class="logo" />
+        <img :src="bagongphlogo" alt="Bagong PH Logo" class="logo" />
+      </div>
+      <h5 class="fw">Department of Labor and Employment</h5>
+    </div>
+
+    <form class="form" @submit.prevent="handleLogin">
+      <div class="field">
+        <label>Email</label>
+        <input v-model.trim="email" type="email" placeholder="Enter your email" required />
       </div>
 
-      <form class="form" @submit.prevent="handleLogin">
-        <div class="field">
-          <label>Email</label>
-          <input v-model.trim="email" type="email" placeholder="Enter your email" required />
-        </div>
+      <div class="field">
+        <label>Password</label>
+        <input v-model="password" type="password" placeholder="Enter your password" required />
+      </div>
 
-        <div class="field">
-          <label>Password</label>
-          <input v-model="password" type="password" placeholder="Enter your password" required />
-        </div>
+      <button class="btn" type="submit" :disabled="loading">
+        {{ loading ? "Logging in..." : "Login" }}
+      </button>
+    </form>
 
-        <button class="btn" type="submit" :disabled="loading">
-          {{ loading ? "Logging in..." : "Login" }}
-        </button>
-      </form>
-
-      <div class="footer">© 2025 DOLE Region VIII</div>
-    </div>
+    <div class="footer">© 2025 DOLE Region VIII</div>
   </div>
+</div>
 </template>
 
 <script setup>
@@ -53,58 +53,58 @@ const loading = ref(false);
 
 const token = localStorage.getItem("auth_token");
 if (token) {
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
 
 const handleLogin = async () => {
-  loading.value = true;
+loading.value = true;
 
-  try {
-    const res = await axios.post(`${API_BASE}/login`, {
-      email: email.value,
-      password: password.value,
+try {
+  const res = await axios.post(`${API_BASE}/login`, {
+    email: email.value,
+    password: password.value,
+  });
+
+  if (res.data?.success && res.data?.token && res.data?.user) {
+    const user = res.data.user;
+
+    localStorage.setItem("user_id", String(user.id || ""));
+    localStorage.setItem("auth_token", res.data.token);
+    localStorage.setItem("userlevel_id", String(user.userlevel_id || 0));
+    localStorage.setItem("user_name", String(user.username || ""));
+    localStorage.setItem("profile_image", String(user.profile_image || ""));
+    localStorage.setItem("division", String(user.division || ""));
+    localStorage.setItem("first_name", String(user.first_name || ""));
+    localStorage.setItem("last_name", String(user.last_name || ""));
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+
+    Swal.fire({
+      title: `Welcome, ${user.username || "User"}!`,
+      text: "Successfully logged in",
+      icon: "success",
+      position: "top-end",
+      toast: true,
+      timer: 1600,
+      showConfirmButton: false,
     });
 
-    if (res.data?.success && res.data?.token && res.data?.user) {
-      const user = res.data.user;
+    const userLevel = Number(user.userlevel_id || 0);
 
-      localStorage.setItem("user_id", String(user.id || ""));
-      localStorage.setItem("auth_token", res.data.token);
-      localStorage.setItem("userlevel_id", String(user.userlevel_id || 0));
-      localStorage.setItem("user_name", String(user.username || ""));
-      localStorage.setItem("profile_image", String(user.profile_image || ""));
-      localStorage.setItem("division", String(user.division || ""));
-      localStorage.setItem("first_name", String(user.first_name || ""));
-      localStorage.setItem("last_name", String(user.last_name || ""));
-
-      axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
-
-      Swal.fire({
-        title: `Welcome, ${user.username || "User"}!`,
-        text: "Successfully logged in",
-        icon: "success",
-        position: "top-end",
-        toast: true,
-        timer: 1600,
-        showConfirmButton: false,
-      });
-
-      const userLevel = Number(user.userlevel_id || 0);
-
-      setTimeout(() => {
-        if (userLevel === 1) router.push("/dashboard");
-        else if (userLevel === 2) router.push("/supply/DashboardSupply");
-        else if (userLevel === 3) router.push("/fo/dashboard");
-        else router.push("/dashboard");
-      }, 700);
-    } else {
-      Swal.fire("Invalid Login", res.data?.message || "Invalid credentials.", "error");
-    }
-  } catch (error) {
-    Swal.fire("Login Error", error.response?.data?.message || "Server error.", "error");
-  } finally {
-    loading.value = false;
+    setTimeout(() => {
+      if (userLevel === 1) router.push("/dashboard");
+      else if (userLevel === 2) router.push("/supply/DashboardSupply");
+      else if (userLevel === 3) router.push("/fo/dashboard");
+      else router.push("/dashboard");
+    }, 700);
+  } else {
+    Swal.fire("Invalid Login", res.data?.message || "Invalid credentials.", "error");
   }
+} catch (error) {
+  Swal.fire("Login Error", error.response?.data?.message || "Server error.", "error");
+} finally {
+  loading.value = false;
+}
 };
 </script>
 
