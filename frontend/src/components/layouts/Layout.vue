@@ -11,6 +11,7 @@
         <img
           v-if="user.profile_image"
           :src="user.profile_image"
+          @error="handleImageError"
           class="rounded-circle me-2 profile-img"
           width="40"
           height="40"
@@ -22,184 +23,18 @@
       </div>
 
       <nav class="flex-grow-1 px-2 sidebar-nav">
-        <router-link
-          to="/dashboard"
-          class="d-flex align-items-center p-2 text-decoration-none text-dark rounded mb-2 sidebar-link"
-          active-class="active-link"
-        >
+        <router-link to="/dashboard" class="d-flex align-items-center p-2 text-decoration-none text-dark rounded mb-2 sidebar-link" active-class="active-link">
           <font-awesome-icon :icon="['fas', 'tachometer-alt']" class="me-2" />
           <span v-if="isOpen">Dashboard</span>
         </router-link>
-
-        <div class="mt-2">
-          <button
-            type="button"
-            class="btn w-100 d-flex align-items-center justify-content-between p-2 text-start text-dark bg-transparent border-0 sidebar-link"
-            @click="openOO1 = !openOO1"
-          >
-            <span class="d-flex align-items-center">
-              <font-awesome-icon :icon="['fas', 'briefcase']" class="me-2" />
-              <span v-if="isOpen">OO1 Employment</span>
-            </span>
-            <i v-if="isOpen" :class="['bi', openOO1 ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
+        
+        <div class="p-3 border-top sidebar-bottom">
+          <button class="btn btn-outline-danger w-100" @click="handleLogout">
+            <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="me-2" />
+            <span v-if="isOpen">Logout</span>
           </button>
-
-          <transition name="slide-fade">
-            <div v-show="openOO1 && isOpen" class="ps-4">
-              <router-link to="Gipoffice" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                GIP Offices
-              </router-link>
-              <router-link to="Gip" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                GIP Employees
-              </router-link>
-              <router-link to="/oo1/c" class="d-block p-2 text-decoration-none text-dark rounded sidebar-link" active-class="active-link">
-               SPES
-              </router-link>
-            </div>
-          </transition>
-        </div>
-
-        <div class="mt-2">
-          <button
-            type="button"
-            class="btn w-100 d-flex align-items-center justify-content-between p-2 text-start text-dark bg-transparent border-0 sidebar-link"
-            @click="openOO2 = !openOO2"
-          >
-            <span class="d-flex align-items-center">
-              <font-awesome-icon :icon="['fas', 'user-cog']" class="me-2" />
-              <span v-if="isOpen">OO2 Engineer</span>
-            </span>
-            <i v-if="isOpen" :class="['bi', openOO2 ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
-          </button>
-
-          <transition name="slide-fade">
-            <div v-show="openOO2 && isOpen" class="ps-4">
-              <router-link to="/oo2/a" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                Accreditation
-              </router-link>
-              <router-link to="/oo2/b" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                Inspection
-              </router-link>
-              <router-link to="/oo2/c" class="d-block p-2 text-decoration-none text-dark rounded sidebar-link" active-class="active-link">
-                Other Services
-              </router-link>
-            </div>
-          </transition>
-        </div>
-
-        <div class="mt-2">
-          <button
-            type="button"
-            class="btn w-100 d-flex align-items-center justify-content-between p-2 text-start text-dark bg-transparent border-0 sidebar-link"
-            @click="openOO3 = !openOO3"
-          >
-            <span class="d-flex align-items-center">
-              <font-awesome-icon :icon="['fas', 'hand-holding-usd']" class="me-2" />
-              <span v-if="isOpen">OO3 DILEEP</span>
-            </span>
-            <i v-if="isOpen" :class="['bi', openOO3 ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
-          </button>
-
-          <transition name="slide-fade">
-            <div v-show="openOO3 && isOpen" class="ps-4">
-              <router-link to="/oo3/a" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                Kabuhayan
-              </router-link>
-              <router-link to="/tupad" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                DOLE-TUPAD
-              </router-link>
-              <router-link to="/adlstatus" class="d-block p-2 text-decoration-none text-dark rounded sidebar-link" active-class="active-link">
-                ADL Status
-              </router-link>
-                <router-link to="/Cashadvance" class="d-block p-2 text-decoration-none text-dark rounded sidebar-link" active-class="active-link">
-              Cash advance
-              </router-link>
-            </div>
-          </transition>
-        </div>
-
-        <div class="mt-2" v-if="isOpen">
-          <router-link
-            to="/records"
-            class="d-flex align-items-center p-2 text-decoration-none text-dark rounded mb-1 sidebar-link"
-            active-class="active-link"
-          >
-            <font-awesome-icon :icon="['fas', 'book']" class="me-2" />
-            <span>Records</span>
-          </router-link>
-        </div>
-
-        <div class="mt-2">
-          <button
-            type="button"
-            class="btn w-100 d-flex align-items-center justify-content-between p-2 text-start text-dark bg-transparent border-0 sidebar-link"
-            @click="openSupply = !openSupply"
-          >
-            <span class="d-flex align-items-center">
-              <font-awesome-icon :icon="['fas', 'shopping-cart']" class="me-2" />
-              <span v-if="isOpen">Supply</span>
-            </span>
-            <i v-if="isOpen" :class="['bi', openSupply ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
-          </button>
-
-          <transition name="slide-fade">
-            <div v-show="openSupply && isOpen" class="ps-4">
-              <router-link to="/supply" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                Items
-              </router-link>
-              <router-link to="/supplyrequest" class="d-block p-2 text-decoration-none text-dark rounded mb-1 sidebar-link" active-class="active-link">
-                Request
-              </router-link>
-              <router-link to="/supplyreport" class="d-block p-2 text-decoration-none text-dark rounded sidebar-link" active-class="active-link">
-                Reports
-              </router-link>
-            </div>
-          </transition>
-        </div>
-
-        <div class="mt-2">
-          <button
-            type="button"
-            class="btn w-100 d-flex align-items-center justify-content-between p-2 text-start text-dark bg-transparent border-0 sidebar-link"
-            @click="openEmployees = !openEmployees"
-          >
-            <span class="d-flex align-items-center">
-              <font-awesome-icon :icon="['fas', 'users']" class="me-2" />
-              <span v-if="isOpen">Employees</span>
-            </span>
-            <i v-if="isOpen" :class="['bi', openEmployees ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
-          </button>
-
-          <transition name="slide-fade">
-            <div v-show="openEmployees && isOpen" class="ps-4">
-              <router-link
-                to="/positions"
-                class="d-flex align-items-center p-2 text-decoration-none text-dark rounded sidebar-link emp-child-link"
-                active-class="active-link"
-              >
-                <font-awesome-icon :icon="['fas', 'user-plus']" class="me-2 emp-child-icon" />
-                <span>Manage Employees</span>
-              </router-link>
-
-              <router-link
-                to="/calendar"
-                class="d-flex align-items-center p-2 text-decoration-none text-dark rounded sidebar-link emp-child-link mt-1"
-                active-class="active-link"
-              >
-                <font-awesome-icon :icon="['fas', 'calendar-alt']" class="me-2 emp-child-icon" />
-                <span>Calendar</span>
-              </router-link>
-            </div>
-          </transition>
         </div>
       </nav>
-
-      <div class="p-3 border-top sidebar-bottom">
-        <button class="btn btn-outline-danger w-100" @click="handleLogout">
-          <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="me-2" />
-          <span v-if="isOpen">Logout</span>
-        </button>
-      </div>
     </aside>
 
     <div :class="['content', isOpen ? 'content-shift' : 'content-normal']">
@@ -210,7 +45,6 @@
           </button>
           <router-link to="/" class="navbar-brand">TSSD</router-link>
         </div>
-
         <div class="d-flex align-items-center">
           <img :src="bagongLogo" alt="Bagong Pilipinas" height="40" class="me-3" />
           <img :src="doleLogo" alt="DOLE" height="40" />
@@ -225,7 +59,7 @@
 </template>
 
 <script>
-import { ref, onMounted, inject } from "vue";
+import { ref, onMounted } from "vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 import bagongLogo from "../../assets/logo/bagongphlogo.png";
@@ -233,14 +67,9 @@ import doleLogo from "../../assets/logo/dole.png";
 
 export default {
   setup() {
-    const API_BASE = inject("API_BASE");
-
+    const API_BASE = "https://tssdapp-1.onrender.com/api";
     const isOpen = ref(true);
-    const openOO1 = ref(false);
-    const openOO2 = ref(false);
-    const openOO3 = ref(false);
-    const openSupply = ref(false);
-    const openEmployees = ref(false);
+    // ... (Keep all your existing openOO1, openOO2 etc refs)
 
     const user = ref({
       first_name: "",
@@ -248,14 +77,18 @@ export default {
       profile_image: "",
     });
 
+    // FALLBACK AVATAR LOGIC
+    const handleImageError = (e) => {
+      e.target.src = `https://ui-avatars.com/api/?name=${user.value.first_name}+${user.value.last_name}&background=0d6efd&color=fff`;
+    };
+
     onMounted(() => {
       const token = localStorage.getItem("auth_token");
-      if (!token) return (window.location.href = "/login"); // Hard redirect fallback
+      if (!token) return (window.location.href = "/login");
 
-      // FORMAT IMAGE PATH FOR RENDER BACKEND
       let savedImage = localStorage.getItem("profile_image") || "";
       if (savedImage && !savedImage.startsWith("http")) {
-        const baseHost = API_BASE ? API_BASE.replace("/api", "") : "https://tssdapp-1.onrender.com";
+        const baseHost = API_BASE.replace("/api", "");
         savedImage = baseHost + (savedImage.startsWith('/') ? '' : '/') + savedImage;
       }
 
@@ -264,63 +97,43 @@ export default {
         last_name: (localStorage.getItem("last_name") || "").trim(),
         profile_image: savedImage,
       };
-
-      if ((!user.value.first_name || !user.value.last_name) && localStorage.getItem("user_name")) {
-        const full = (localStorage.getItem("user_name") || "").trim();
-        const parts = full.split(" ");
-        user.value.first_name = parts[0] || "";
-        user.value.last_name = parts.slice(1).join(" ") || "";
-      }
     });
 
     const toggleSidebar = () => (isOpen.value = !isOpen.value);
 
-    // ============================================
-    // THE BULLETPROOF HARD-RELOAD LOGOUT
-    // ============================================
     const handleLogout = async () => {
-      // 1. Instantly nuke local storage to ensure local logout
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("userlevel_id");
-      localStorage.removeItem("user_name");
-      localStorage.removeItem("profile_image");
-      localStorage.removeItem("division");
-      localStorage.removeItem("first_name");
-      localStorage.removeItem("last_name");
-      delete axios.defaults.headers.common["Authorization"];
-
-      // 2. Tell the backend to destroy the session (fire and forget)
       try {
-        await axios.post("https://tssdapp-1.onrender.com/api/logout");
+        await axios.post(`${API_BASE}/logout`, {}, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}` }
+        });
       } catch (e) {
-        // We ignore network/401 errors because the local memory is already safely wiped!
-      }
+        // Proceed even if network fails
+      } finally {
+        localStorage.clear();
+        delete axios.defaults.headers.common["Authorization"];
+        
+        Swal.fire({
+          title: "Logged out!",
+          icon: "success",
+          timer: 800,
+          showConfirmButton: false,
+        });
 
-      // 3. Show message and force the absolute browser refresh
-      Swal.fire({
-        title: "Logged out!",
-        icon: "success",
-        timer: 1000,
-        showConfirmButton: false,
-      }).then(() => {
-        // THIS IS THE MAGIC FIX: Forces browser to completely reload at the /login page
-        window.location.replace(window.location.origin + "/login");
-      });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 800);
+      }
     };
 
     return {
       isOpen,
-      openOO1,
-      openOO2,
-      openOO3,
-      openSupply,
-      openEmployees,
       user,
+      handleImageError, // EXPOSED TO TEMPLATE
       toggleSidebar,
       handleLogout,
       bagongLogo,
       doleLogo,
+      // ... (don't forget to include all other refs here)
     };
   },
 };
@@ -346,7 +159,6 @@ export default {
 .sidebar-link:hover { background-color: #e9ecef; color: #0d6efd !important; transform: translateX(2px); }
 .emp-child-icon { font-size: 0.95rem; }
 
-/* ✅ MOBILE */
 @media (max-width: 768px) {
   .sidebar-open { width: 80vw; max-width: 320px; }
   .sidebar-closed { width: 0; border: none !important; }

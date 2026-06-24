@@ -5,6 +5,7 @@ import LayoutSupply from "../components/layouts/LayoutSupply.vue";
 import LayoutFo from "../components/layouts/LayoutUser.vue";
 
 import Login from "../components/layouts/Login.vue";
+import Home from "../components/layouts/Home.vue"; // ← keep import here
 
 // ADMIN
 import Dashboard from "../components/layouts/Dashboard.vue";
@@ -20,7 +21,8 @@ import Supply from "../components/layouts/Supply.vue";
 import Supplyrequest from "../components/layouts/Supplyrequest.vue";
 import Supplyreport from "../components/layouts/Supplyreport.vue";
 import Cashadvance from "../components/layouts/tupadcashadvance.vue";
-
+import Gip from "../components/layouts/Gip.vue";
+import Gipoffice from "../components/layouts/Gipoffice.vue";
 // SUPPLY ADMIN
 import DashboardSupply from "../components/layouts/DashboardSupply.vue";
 import Supply_Supply from "../components/layouts/Supply_Supply.vue";
@@ -36,30 +38,37 @@ import AdlstatusFo from "../components/layouts/AdlstatusFo.vue";
 import Per_adl_breakdown_Fo from "../components/layouts/Per_adl_breakdown_Fo.vue";
 import Supply_Fo from "../components/layouts/Supply_Fo.vue";
 import SupplyrequestUser from "../components/layouts/SupplyrequestUser.vue";
+import Records from "../components/layouts/Records.vue";
 
 const routes = [
+  // ✅ Standalone full-page routes (NO sidebar)
   { path: "/login", name: "Login", component: Login, meta: { requiresAuth: false } },
+  { path: "/home",  name: "Home",  component: Home,  meta: { requiresAuth: false } }, // ← moved here
 
-  // ✅ ADMIN
+  // ✅ ADMIN (has sidebar via Layout)
   {
     path: "/",
     component: Layout,
     meta: { requiresAuth: true },
     children: [
       { path: "", redirect: "/dashboard" },
-      { path: "dashboard", name: "Dashboard", component: Dashboard },
-      { path: "tupad", name: "Tupad", component: Tupad },
-      { path: "TUPADadl", name: "TUPADadl", component: TUPADadl },
-      { path: "Calendar", name: "Calendar", component: Calendar },
-      { path: "Breakdown", name: "Breakdown", component: Breakdown },
-      { path: "Adlstatus", name: "Adlstatus", component: Adlstatus },
-      { path: "Employees", name: "Employees", component: Employees },
-      { path: "Positions", name: "Positions", component: Positions },
+      { path: "dashboard",   name: "Dashboard",   component: Dashboard },
+      { path: "tupad",       name: "Tupad",       component: Tupad },
+      { path: "TUPADadl",   name: "TUPADadl",   component: TUPADadl },
+      { path: "Calendar",   name: "Calendar",    component: Calendar },
+      { path: "Breakdown",  name: "Breakdown",   component: Breakdown },
+      { path: "Adlstatus",  name: "Adlstatus",   component: Adlstatus },
+      { path: "Employees",  name: "Employees",   component: Employees },
+      { path: "Positions",  name: "Positions",   component: Positions },
       { path: "Adlbreakdown", name: "Adlbreakdown", component: Adlbreakdown },
-      { path: "Supply", name: "Supply", component: Supply },
+      { path: "Supply",     name: "Supply",      component: Supply },
       { path: "Supplyrequest", name: "Supplyrequest", component: Supplyrequest },
-      { path: "Supplyreport", name: "Supplyreport", component: Supplyreport },
-      { path: "Cashadvance", name: "Cashadvance", component: Cashadvance },
+      { path: "Supplyreport",  name: "Supplyreport",  component: Supplyreport },
+      { path: "Cashadvance",   name: "Cashadvance",   component: Cashadvance },
+      { path: "Records",       name: "Records",       component: Records },
+      { path: "Gip",       name: "Gip",       component: Gip },
+      { path: "Gipoffice",       name: "Gipoffice",       component: Gipoffice },
+      // ← Home removed from here
     ],
   },
 
@@ -71,11 +80,9 @@ const routes = [
     children: [
       { path: "", redirect: "/supply/DashboardSupply" },
       { path: "DashboardSupply", name: "DashboardSupply", component: DashboardSupply },
-      { path: "items", name: "SupplyItems", component: Supply_Supply },
+      { path: "items",    name: "SupplyItems",   component: Supply_Supply },
       { path: "requests", name: "SupplyRequests", component: Supplyrequest_Supply },
-      { path: "reports", name: "SupplyReports", component: Supplyreport_Supply },
-
-      // ✅ Calendar for Supply
+      { path: "reports",  name: "SupplyReports",  component: Supplyreport_Supply },
       { path: "calendar", name: "SupplyCalendar", component: Calendar },
     ],
   },
@@ -87,17 +94,15 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       { path: "", redirect: "/fo/dashboard" },
-      { path: "dashboard", name: "DashboardFo", component: DashboardFo },
-      { path: "tupad", name: "TupadFo", component: Tupad_Fo },
-      { path: "tupad-adl", name: "TupadAdlFo", component: Tupad_adl_Fo },
+      { path: "dashboard",      name: "DashboardFo",       component: DashboardFo },
+      { path: "tupad",          name: "TupadFo",           component: Tupad_Fo },
+      { path: "tupad-adl",      name: "TupadAdlFo",        component: Tupad_adl_Fo },
       { path: "tupad-breakdown", name: "TupadBreakdownFo", component: Tupad_breakdown_Fo },
-      { path: "adlstatus", name: "AdlstatusFo", component: AdlstatusFo },
-      { path: "adlbreakdown", name: "PerAdlBreakdownFo", component: Per_adl_breakdown_Fo },
-      { path: "supply", name: "SupplyFo", component: Supply_Fo },
-      { path: "supplyrequest", name: "SupplyrequestUser", component: SupplyrequestUser },
-
-      // ✅ Calendar for FO
-      { path: "calendar", name: "FoCalendar", component: Calendar },
+      { path: "adlstatus",      name: "AdlstatusFo",       component: AdlstatusFo },
+      { path: "adlbreakdown",   name: "PerAdlBreakdownFo", component: Per_adl_breakdown_Fo },
+      { path: "supply",         name: "SupplyFo",          component: Supply_Fo },
+      { path: "supplyrequest",  name: "SupplyrequestUser", component: SupplyrequestUser },
+      { path: "calendar",       name: "FoCalendar",        component: Calendar },
     ],
   },
 ];
