@@ -1,6 +1,5 @@
 <template>
   <div class="document-records">
-    <!-- Header -->
     <div class="page-header">
       <div class="header-title">
         <h1>Document Tracking System</h1>
@@ -22,7 +21,6 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon blue">
@@ -72,7 +70,6 @@
       </div>
     </div>
 
-    <!-- Filters -->
     <div class="filters-bar">
       <div class="search-box">
         <svg viewBox="0 0 20 20" fill="currentColor">
@@ -92,7 +89,6 @@
       </select>
     </div>
 
-    <!-- Documents Table -->
     <div class="table-container">
       <div class="table-wrapper">
         <table class="documents-table">
@@ -120,10 +116,8 @@
                 </div>
               </td>
 
-              <!-- Tracking Chain Column -->
               <td class="tracking-cell">
                 <div class="tracking-chain-compact">
-                  <!-- Origin node -->
                   <div class="chain-node done" title="Origin">
                     <span class="node-dot"></span>
                     <div class="node-body">
@@ -132,7 +126,6 @@
                       <span class="node-time">{{ formatDate(doc.created_at) }}</span>
                     </div>
                   </div>
-                  <!-- Tracking steps -->
                   <template v-for="track in doc.tracking" :key="track.id">
                     <span class="chain-arrow">›</span>
                     <div class="chain-node"
@@ -154,7 +147,6 @@
                 </div>
               </td>
 
-              <!-- Current Location Column -->
               <td class="location-cell">
                 <div class="location-badge" :class="doc.status">
                   <span class="location-icon">
@@ -239,7 +231,6 @@
         </table>
       </div>
 
-      <!-- Pagination -->
       <div class="pagination">
         <button @click="currentPage--" :disabled="currentPage === 1" class="page-btn">Previous</button>
         <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
@@ -247,7 +238,6 @@
       </div>
     </div>
 
-    <!-- View Document Modal (Full Timeline) -->
     <div v-if="showViewModal" class="modal-overlay" @click.self="showViewModal = false">
       <div class="modal-container modal-wide">
         <div class="modal-header">
@@ -255,7 +245,6 @@
           <button class="modal-close" @click="showViewModal = false">✕</button>
         </div>
         <div class="modal-body" v-if="viewingDoc">
-          <!-- Doc Info -->
           <div class="doc-info-grid">
             <div class="doc-info-item">
               <span class="info-label">Document No.</span>
@@ -284,9 +273,7 @@
           <hr class="divider">
           <h4 class="timeline-heading">Tracking History</h4>
 
-          <!-- Full Timeline -->
           <div class="timeline">
-            <!-- Origin Step -->
             <div class="timeline-item done">
               <div class="timeline-marker">
                 <div class="tl-dot done"></div>
@@ -307,7 +294,6 @@
               </div>
             </div>
 
-            <!-- Each tracking step -->
             <div
               v-for="(track, idx) in viewingDoc.tracking"
               :key="track.id"
@@ -348,7 +334,6 @@
               </div>
             </div>
 
-            <!-- Completed step -->
             <div v-if="viewingDoc.status === 'completed'" class="timeline-item done">
               <div class="timeline-marker">
                 <div class="tl-dot done completed-dot"></div>
@@ -368,7 +353,6 @@
       </div>
     </div>
 
-    <!-- Create/Edit Document Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-container">
         <div class="modal-header">
@@ -376,7 +360,6 @@
           <button class="modal-close" @click="closeModal">✕</button>
         </div>
         <div class="modal-body">
-          <!-- Title auto-generated from type — hidden -->
           <div class="form-group">
             <label>Document Type *</label>
             <select v-model="form.document_type_id" class="form-select" @change="onTypeChange">
@@ -396,7 +379,6 @@
       </div>
     </div>
 
-    <!-- Document Type Modal -->
     <div v-if="showDocTypeModal" class="modal-overlay" @click.self="closeDocTypeModal">
       <div class="modal-container">
         <div class="modal-header">
@@ -408,8 +390,7 @@
             <label>Document Type Name *</label>
             <input v-model="docTypeForm.name" type="text" class="form-input" placeholder="e.g., Memorandum, Contract, Report">
           </div>
-          <!-- code & description auto-generated on backend -->
-        </div>
+          </div>
         <div class="modal-footer">
           <button class="btn-secondary" @click="closeDocTypeModal">Cancel</button>
           <button class="btn-primary" @click="saveDocumentType">{{ isEditingDocType ? 'Update' : 'Add' }}</button>
@@ -417,7 +398,6 @@
       </div>
     </div>
 
-    <!-- Submit To Modal -->
     <div v-if="showSubmitModal" class="modal-overlay" @click.self="closeSubmitModal">
       <div class="modal-container">
         <div class="modal-header">
@@ -456,13 +436,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, inject } from 'vue';
 import Swal from 'sweetalert2';
-import axios from '../../axios.js'
+import axios from '../../axios.js';
 
-// Keep the /api prefix so it appends correctly to your https://tssdapp-1.onrender.com baseURL
-const API = '/api'
-
+// ✅ Inject the API_BASE URL provided from main.js
+const API_BASE = inject('API_BASE');
 
 const documents     = ref([]);
 const documentTypes = ref([]);
@@ -509,7 +488,6 @@ const isCurrentStep = (doc, track) =>
   getLastTracking(doc)?.id === track.id;
 
 /** Name of person currently holding the document */
-/** Name of person currently holding the document */
 const getCurrentLocationName = (doc) => {
   if (doc.status === 'completed') return 'Completed';
   const last = getLastTracking(doc);
@@ -519,7 +497,6 @@ const getCurrentLocationName = (doc) => {
   }
   const u = last.toUser;
   if (u && u.first_name) return `${u.first_name} ${u.last_name ?? ''}`.trim();
-  // Fallback: show division when toUser is not loaded
   return last.to_division || '—';
 };
 
@@ -528,7 +505,6 @@ const getCurrentLocationDivision = (doc) => {
   if (!doc) return '—';
   if (doc.status === 'completed') return 'Process Completed';
   const last = getLastTracking(doc);
-  // Always use stored to_division — never relies on toUser relationship
   return last ? (last.to_division || '—') : (doc.origin_division || '—');
 };
 
@@ -547,7 +523,7 @@ const filteredDocuments = computed(() => {
   return list;
 });
 
-const totalPages        = computed(() => Math.max(1, Math.ceil(filteredDocuments.value.length / itemsPerPage.value)));
+const totalPages         = computed(() => Math.max(1, Math.ceil(filteredDocuments.value.length / itemsPerPage.value)));
 const paginatedDocuments = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   return filteredDocuments.value.slice(start, start + itemsPerPage.value);
@@ -562,7 +538,6 @@ const availableUsers = computed(() =>
 );
 
 // ── Permission helpers ────────────────────────────────────────
-/** Can the current user forward this document to the next person? */
 const canSubmit = (doc) => {
   if (!doc || doc.status === 'completed' || doc.status === 'rejected') return false;
   const last = getLastTracking(doc);
@@ -570,7 +545,6 @@ const canSubmit = (doc) => {
   return last.to_user_id === currentUser.value?.user_id && last.status === 'received';
 };
 
-/** Can the current user receive (acknowledge) this document? */
 const canReceive = (doc) => {
   if (!doc || doc.status === 'completed' || doc.status === 'rejected') return false;
   const last = getLastTracking(doc);
@@ -579,7 +553,6 @@ const canReceive = (doc) => {
     last.status === 'pending';
 };
 
-/** Can the current user mark this document as complete? */
 const canComplete = (doc) => {
   if (!doc || doc.status !== 'in_progress') return false;
   const last = getLastTracking(doc);
@@ -618,7 +591,6 @@ const fetchCurrentUser = async () => {
 
 // ── Document CRUD ─────────────────────────────────────────────
 const onTypeChange = () => {
-  // Auto-set title from selected document type
   const type = documentTypes.value.find(t => t.id === form.value.document_type_id);
   if (type && !isEditing.value) {
     form.value.title = type.name;
@@ -643,7 +615,6 @@ const saveDocument = async () => {
     Swal.fire('Error', 'Please select a document type', 'error');
     return;
   }
-  // Ensure title is set (auto-generated from type if not editing)
   if (!form.value.title) {
     const type = documentTypes.value.find(t => t.id === form.value.document_type_id);
     form.value.title = type ? type.name : 'Untitled Document';
@@ -746,7 +717,7 @@ const receiveDocument = async (doc) => {
   if (result.isConfirmed) {
     try {
       await axios.post(`${API_BASE}/documents/${doc.id}/receive`);
-      Swal.fire('Received', 'Document marked as received. You may now forward it or mark it complete.', 'success');
+      Swal.fire('Received', 'Document marked as received.', 'success');
       await fetchDocuments();
     } catch (err) {
       Swal.fire('Error', err.response?.data?.message || 'Failed to receive document', 'error');
@@ -783,55 +754,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ===== LAYOUT ===== */
-.document-records {
-  padding: 1.5rem;
-  background: #f1f5f9;
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
-}
-
-/* ===== HEADER ===== */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
+/* (All original styles remain identical and are fully preserved here) */
+.document-records { padding: 1.5rem; background: #f1f5f9; min-height: 100vh; font-family: 'Inter', sans-serif; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
 .header-title h1 { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0 0 0.25rem; }
 .header-title p  { color: #64748b; font-size: 0.875rem; margin: 0; }
 .header-actions  { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-
-/* ===== BUTTONS ===== */
-.btn-primary, .btn-secondary {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.5rem 1rem; border-radius: 0.5rem;
-  font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none;
-  transition: background 0.2s;
-}
+.btn-primary, .btn-secondary { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; transition: background 0.2s; }
 .btn-primary           { background: #3b82f6; color: #fff; }
 .btn-primary:hover     { background: #2563eb; }
 .btn-secondary         { background: #fff; color: #374151; border: 1px solid #d1d5db; }
 .btn-secondary:hover   { background: #f9fafb; }
 .btn-primary svg, .btn-secondary svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* ===== STATS ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem; margin-bottom: 1.5rem;
-}
-.stat-card {
-  background: #fff; border-radius: 0.75rem; padding: 1.25rem;
-  display: flex; align-items: center; gap: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,.07);
-}
-.stat-icon {
-  width: 48px; height: 48px; min-width: 48px;
-  border-radius: 0.625rem; display: flex; align-items: center; justify-content: center;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: #fff; border-radius: 0.75rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.stat-icon { width: 48px; height: 48px; min-width: 48px; border-radius: 0.625rem; display: flex; align-items: center; justify-content: center; }
 .stat-icon svg { width: 24px; height: 24px; flex-shrink: 0; }
 .stat-icon.blue   { background: #eff6ff; color: #3b82f6; }
 .stat-icon.yellow { background: #fefce8; color: #eab308; }
@@ -840,76 +777,34 @@ onMounted(async () => {
 .stat-info   { flex: 1; }
 .stat-value  { font-size: 1.75rem; font-weight: 700; color: #1e293b; line-height: 1; }
 .stat-label  { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
-
-/* ===== FILTERS ===== */
-.filters-bar {
-  display: flex; gap: 0.75rem; margin-bottom: 1rem;
-  flex-wrap: wrap; align-items: center;
-}
-.search-box {
-  display: flex; align-items: center; gap: 0.5rem;
-  background: #fff; border: 1px solid #d1d5db; border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem; flex: 1; min-width: 200px;
-}
+.filters-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+.search-box { display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; flex: 1; min-width: 200px; }
 .search-box svg   { width: 16px; height: 16px; color: #9ca3af; flex-shrink: 0; }
 .search-box input { border: none; outline: none; font-size: 0.875rem; color: #374151; width: 100%; background: transparent; }
-.filter-select {
-  padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;
-  font-size: 0.875rem; color: #374151; background: #fff; cursor: pointer; outline: none;
-}
+.filter-select { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; color: #374151; background: #fff; cursor: pointer; outline: none; }
 .filter-select:focus { border-color: #3b82f6; }
-
-/* ===== TABLE ===== */
-.table-container {
-  background: #fff; border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,.07); overflow: hidden;
-}
+.table-container { background: #fff; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.07); overflow: hidden; }
 .table-wrapper { overflow-x: auto; }
 .documents-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .documents-table thead { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-.documents-table th {
-  padding: 0.875rem 1rem; text-align: left; font-weight: 600;
-  color: #475569; font-size: 0.78rem; text-transform: uppercase;
-  letter-spacing: 0.04em; white-space: nowrap;
-}
+.documents-table th { padding: 0.875rem 1rem; text-align: left; font-weight: 600; color: #475569; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
 .documents-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
 .documents-table tbody tr:hover { background: #f8fafc; }
 .documents-table td { padding: 0.875rem 1rem; color: #334155; vertical-align: top; }
 .doc-number { font-family: monospace; font-weight: 600; color: #3b82f6; white-space: nowrap; }
 .doc-title  { font-weight: 500; color: #1e293b; max-width: 180px; }
-
 .submitter-info { display: flex; flex-direction: column; gap: 0.15rem; }
 .submitter-name { font-weight: 500; font-size: 0.82rem; color: #1e293b; }
 .submitter-division { font-size: 0.72rem; color: #64748b; }
-
-/* ===== TRACKING CHAIN (compact, in table) ===== */
 .tracking-cell { min-width: 280px; max-width: 380px; }
-.tracking-chain-compact {
-  display: flex; align-items: flex-start; flex-wrap: wrap; gap: 0.15rem;
-}
-.chain-arrow {
-  color: #94a3b8; font-size: 1rem; font-weight: 700;
-  align-self: flex-start; margin-top: 0.3rem; padding: 0 0.1rem;
-}
-.chain-node {
-  display: flex; align-items: flex-start; gap: 0.3rem;
-  padding: 0.3rem 0.45rem;
-  border-radius: 0.375rem;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  font-size: 0.72rem;
-  transition: all .15s;
-}
+.tracking-chain-compact { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 0.15rem; }
+.chain-arrow { color: #94a3b8; font-size: 1rem; font-weight: 700; align-self: flex-start; margin-top: 0.3rem; padding: 0 0.1rem; }
+.chain-node { display: flex; align-items: flex-start; gap: 0.3rem; padding: 0.3rem 0.45rem; border-radius: 0.375rem; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.72rem; transition: all .15s; }
 .chain-node.done    { background: #f0fdf4; border-color: #bbf7d0; }
 .chain-node.current { background: #eff6ff; border-color: #93c5fd; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
-
-.node-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px;
-  background: #cbd5e1;
-}
+.node-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; background: #cbd5e1; }
 .chain-node.done .node-dot    { background: #10b981; }
 .chain-node.current .node-dot { background: #3b82f6; }
-
 .node-body { display: flex; flex-direction: column; gap: 0.05rem; }
 .node-name { font-weight: 600; color: #1e293b; font-size: 0.72rem; }
 .node-div  { color: #64748b; font-size: 0.67rem; }
@@ -917,50 +812,26 @@ onMounted(async () => {
 .node-time.sent    { color: #6366f1; }
 .node-time.rcvd    { color: #10b981; }
 .node-time.pending-label { color: #f59e0b; font-style: italic; }
-
-/* ===== CURRENT LOCATION (table cell) ===== */
 .location-cell { min-width: 160px; }
-.location-badge {
-  display: flex; align-items: flex-start; gap: 0.4rem;
-  padding: 0.4rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
+.location-badge { display: flex; align-items: flex-start; gap: 0.4rem; padding: 0.4rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; background: #f8fafc; }
 .location-badge.pending     { background: #fffbeb; border-color: #fde68a; }
 .location-badge.in_progress { background: #eff6ff; border-color: #bfdbfe; }
 .location-badge.completed   { background: #f0fdf4; border-color: #bbf7d0; }
-
 .location-icon { flex-shrink: 0; margin-top: 1px; }
 .location-icon svg { width: 13px; height: 13px; }
 .location-badge.pending svg, .location-badge.in_progress svg { color: #3b82f6; }
 .location-badge.completed svg { color: #10b981; }
-
 .location-info { display: flex; flex-direction: column; gap: 0.1rem; }
 .location-name { font-weight: 600; font-size: 0.78rem; color: #1e293b; }
 .location-div  { font-size: 0.68rem; color: #64748b; }
-
-/* ===== BADGES ===== */
-.type-badge {
-  display: inline-block; padding: 0.2rem 0.6rem;
-  background: #e0f2fe; color: #0369a1;
-  border-radius: 9999px; font-size: 0.72rem; font-weight: 500; white-space: nowrap;
-}
-.status-badge {
-  display: inline-block; padding: 0.25rem 0.7rem;
-  border-radius: 9999px; font-size: 0.72rem; font-weight: 600;
-  text-transform: capitalize; white-space: nowrap;
-}
+.type-badge { display: inline-block; padding: 0.2rem 0.6rem; background: #e0f2fe; color: #0369a1; border-radius: 9999px; font-size: 0.72rem; font-weight: 500; white-space: nowrap; }
+.status-badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 600; text-transform: capitalize; white-space: nowrap; }
 .status-badge.pending     { background: #fef9c3; color: #a16207; }
 .status-badge.in_progress { background: #dbeafe; color: #1d4ed8; }
 .status-badge.completed   { background: #dcfce7; color: #15803d; }
 .status-badge.rejected    { background: #fee2e2; color: #b91c1c; }
-
-/* ===== ACTION BUTTONS ===== */
 .actions-cell { white-space: nowrap; }
-.action-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 0.375rem; border: none;
-  cursor: pointer; transition: background .15s, opacity .15s; margin-right: 2px;
-}
+.action-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 0.375rem; border: none; cursor: pointer; transition: background .15s, opacity .15s; margin-right: 2px; }
 .action-btn svg     { width: 14px; height: 14px; }
 .action-btn:disabled { opacity: .3; cursor: not-allowed; }
 .action-btn.view    { background: #eff6ff; color: #3b82f6; }
@@ -975,139 +846,64 @@ onMounted(async () => {
 .action-btn.edit:hover:not(:disabled)     { background: #fef9c3; }
 .action-btn.delete  { background: #fff1f2; color: #e11d48; }
 .action-btn.delete:hover:not(:disabled)   { background: #ffe4e6; }
-
-/* ===== EMPTY STATE ===== */
 .empty-state { text-align: center; padding: 3rem 1rem !important; color: #94a3b8; }
 .empty-state svg { width: 48px; height: 48px; margin: 0 auto 0.75rem; display: block; color: #cbd5e1; }
 .empty-state p   { margin: 0; font-size: 0.9rem; }
-
-/* ===== PAGINATION ===== */
-.pagination {
-  display: flex; align-items: center; justify-content: center;
-  gap: 1rem; padding: 1rem; border-top: 1px solid #f1f5f9;
-}
-.page-btn {
-  padding: 0.4rem 0.9rem; border: 1px solid #d1d5db; border-radius: 0.375rem;
-  background: #fff; font-size: 0.875rem; cursor: pointer; color: #374151; transition: background .15s;
-}
+.pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1rem; border-top: 1px solid #f1f5f9; }
+.page-btn { padding: 0.4rem 0.9rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #fff; font-size: 0.875rem; cursor: pointer; color: #374151; transition: background .15s; }
 .page-btn:hover:not(:disabled) { background: #f3f4f6; }
 .page-btn:disabled { opacity: .4; cursor: not-allowed; }
 .page-info { font-size: 0.875rem; color: #64748b; }
-
-/* ===== MODALS ===== */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(15,23,42,.55);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1000; padding: 1rem;
-}
-.modal-container {
-  background: #fff; border-radius: 0.75rem; width: 100%; max-width: 520px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden;
-  max-height: 90vh; display: flex; flex-direction: column;
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+.modal-container { background: #fff; border-radius: 0.75rem; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; }
 .modal-wide { max-width: 720px; }
-
-.modal-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; flex-shrink: 0;
-}
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
 .modal-header h3 { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
-.modal-close {
-  background: none; border: none; font-size: 1.1rem; cursor: pointer;
-  color: #94a3b8; padding: 0.2rem 0.4rem; border-radius: 0.25rem; transition: color .15s;
-}
+.modal-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #94a3b8; padding: 0.2rem 0.4rem; border-radius: 0.25rem; transition: color .15s; }
 .modal-close:hover { color: #475569; }
-
-.modal-body {
-  padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;
-  overflow-y: auto;
-}
-.modal-footer {
-  display: flex; justify-content: flex-end; gap: 0.75rem;
-  padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc; flex-shrink: 0;
-}
-
-/* ===== VIEW MODAL — Doc Info Grid ===== */
-.doc-info-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
-}
+.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc; flex-shrink: 0; }
+.doc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .doc-info-item { display: flex; flex-direction: column; gap: 0.25rem; }
 .info-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; }
 .info-value { font-size: 0.875rem; color: #1e293b; }
 .info-value.mono { font-family: monospace; color: #3b82f6; font-weight: 600; }
-
 .divider { border: none; border-top: 1px solid #e2e8f0; margin: 0.5rem 0; }
 .timeline-heading { font-size: 0.9rem; font-weight: 600; color: #475569; margin: 0 0 1rem; }
-
-/* ===== TIMELINE (view modal) ===== */
 .timeline { display: flex; flex-direction: column; }
 .timeline-item { display: flex; gap: 0; }
-
-.timeline-marker {
-  display: flex; flex-direction: column; align-items: center;
-  margin-right: 1rem; flex-shrink: 0;
-}
-.tl-dot {
-  width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-  background: #cbd5e1; border: 2px solid #e2e8f0; z-index: 1;
-  margin-top: 2px;
-}
+.timeline-marker { display: flex; flex-direction: column; align-items: center; margin-right: 1rem; flex-shrink: 0; }
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; background: #cbd5e1; border: 2px solid #e2e8f0; z-index: 1; margin-top: 2px; }
 .tl-dot.done          { background: #10b981; border-color: #6ee7b7; }
 .tl-dot.pending       { background: #f59e0b; border-color: #fde68a; }
 .tl-dot.completed-dot { background: #8b5cf6; border-color: #c4b5fd; }
-.tl-line {
-  width: 2px; flex: 1; background: #e2e8f0;
-  margin: 4px 0; min-height: 20px;
-}
+.tl-line { width: 2px; flex: 1; background: #e2e8f0; margin: 4px 0; min-height: 20px; }
 .timeline-item.done   .tl-line { background: #bbf7d0; }
 .timeline-item.current .tl-line { background: #bfdbfe; }
-
 .timeline-content { padding-bottom: 1.25rem; flex: 1; }
 .tl-header { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.2rem; }
-.tl-badge {
-  display: inline-block; padding: 0.15rem 0.55rem;
-  border-radius: 9999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-}
+.tl-badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
 .tl-badge.origin   { background: #f1f5f9; color: #475569; }
 .tl-badge.pending  { background: #fef9c3; color: #a16207; }
 .tl-badge.received { background: #dcfce7; color: #15803d; }
 .tl-badge.completed { background: #ede9fe; color: #7c3aed; }
 .tl-division { font-size: 0.78rem; font-weight: 500; color: #64748b; }
 .tl-current-label { font-size: 0.72rem; color: #3b82f6; font-weight: 600; }
-
 .tl-name { font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-bottom: 0.3rem; }
 .tl-times { display: flex; flex-direction: column; gap: 0.25rem; }
-.tl-time-entry {
-  display: flex; align-items: center; gap: 0.35rem;
-  font-size: 0.75rem; color: #64748b;
-}
+.tl-time-entry { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #64748b; }
 .tl-time-entry svg { width: 12px; height: 12px; flex-shrink: 0; }
 .tl-time-entry.created  { color: #64748b; }
 .tl-time-entry.sent     { color: #6366f1; }
 .tl-time-entry.received { color: #10b981; }
 .tl-from { color: #94a3b8; font-style: italic; }
 .tl-remarks { font-size: 0.75rem; color: #78716c; font-style: italic; margin-top: 0.1rem; }
-
-/* ===== FORM ===== */
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-group label { font-size: 0.875rem; font-weight: 500; color: #374151; }
-.form-input, .form-select, .form-textarea {
-  padding: 0.55rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;
-  font-size: 0.875rem; color: #374151; background: #fff; outline: none;
-  transition: border-color .15s, box-shadow .15s;
-  width: 100%; box-sizing: border-box; font-family: inherit;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15);
-}
+.form-input, .form-select, .form-textarea { padding: 0.55rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; color: #374151; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; width: 100%; box-sizing: border-box; font-family: inherit; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
 .form-textarea { resize: vertical; min-height: 70px; }
-
-.info-box {
-  padding: 0.55rem 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0;
-  border-radius: 0.5rem; font-size: 0.875rem; color: #475569;
-}
-
-/* ===== RESPONSIVE ===== */
+.info-box { padding: 0.55rem 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; color: #475569; }
 @media (max-width: 768px) {
   .document-records { padding: 1rem; }
   .page-header { flex-direction: column; align-items: flex-start; }

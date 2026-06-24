@@ -1,6 +1,5 @@
 <template>
   <div class="gip-office-wrapper">
-    <!-- Header -->
     <div class="header">
       <div class="header-left">
         <div class="header-icon">
@@ -20,7 +19,6 @@
       </button>
     </div>
 
-    <!-- Stats & Year Filter -->
     <div class="top-row">
       <div class="stats-grid">
         <div class="stat-card">
@@ -65,7 +63,6 @@
       </div>
     </div>
 
-    <!-- Offices Table -->
     <div class="table-card">
       <div class="table-wrapper">
         <table>
@@ -88,9 +85,9 @@
                   <span>{{ office.name }}</span>
                 </div>
               </td>
-              <td class="center"><span class="count-badge">{{ office.gip_employees_count }}</span></td>
-              <td class="center">{{ office.male_count }}</td>
-              <td class="center">{{ office.female_count }}</td>
+              <td class="center"><span class="count-badge">{{ office.gip_employees_count ?? office.employees_count ?? 0 }}</span></td>
+              <td class="center">{{ office.male_count ?? 0 }}</td>
+              <td class="center">{{ office.female_count ?? 0 }}</td>
               <td class="actions">
                 <button class="btn-icon manage" @click="openManageModal(office)" title="Manage GIPs">
                   <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
@@ -108,7 +105,6 @@
       </div>
     </div>
 
-    <!-- Manage Modal (GIPs assigned to office for selected year) -->
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="showManageModal" class="modal-overlay" @click.self="closeManageModal">
@@ -126,7 +122,7 @@
                     {{ (gip.first_name?.[0] || '') + (gip.family_name?.[0] || '') }}
                   </div>
                   <div class="gip-info">
-                    <strong>{{ gip.full_name }}</strong>
+                    <strong>{{ gip.full_name ?? `${gip.first_name} ${gip.family_name}` }}</strong>
                     <span class="gip-status" :class="statusClass(gip.status)">{{ gip.status }}</span>
                   </div>
                   <button class="btn-unassign" @click="removeGip(gip)" title="Unassign">✕</button>
@@ -140,7 +136,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Assign Modal (search & assign unassigned GIPs) -->
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="showAssignModal" class="modal-overlay" @click.self="closeAssignModal">
@@ -154,14 +149,14 @@
             <div class="modal-body">
               <div class="search-box">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-                <input v-model="searchQuery" placeholder="Search unassigned GIP..." @input="filterUnassigned" />
+                <input v-model="searchQuery" placeholder="Search unassigned GIP..." />
               </div>
               <div class="gip-list selectable">
                 <div v-for="gip in filteredUnassigned" :key="gip.id" class="gip-item" @click="assignGip(gip)">
                   <div class="gip-avatar" :class="gip.gender === 'Female' ? 'female' : 'male'">
                     {{ (gip.first_name?.[0] || '') + (gip.family_name?.[0] || '') }}
                   </div>
-                  <span>{{ gip.full_name }}</span>
+                  <span>{{ gip.full_name ?? `${gip.first_name} ${gip.family_name}` }}</span>
                 </div>
                 <div v-if="!filteredUnassigned.length" class="empty">No unassigned GIPs found for {{ selectedYear }}.</div>
               </div>
@@ -171,7 +166,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Office Form Modal (Add/Edit) -->
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="showOfficeModal" class="modal-overlay" @click.self="closeOfficeModal">
@@ -204,13 +198,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-
-import Swal from 'sweetalert2'   // ✅ SweetAlert2
+import { ref, reactive, computed, onMounted, inject } from 'vue'
+import Swal from 'sweetalert2'
 import axios from '../../axios.js'
 
-// Keep the /api prefix so it appends correctly to your https://tssdapp-1.onrender.com baseURL
-const API = '/api'
+// ✅ Injected parent contextual key base variable
+const API_BASE = inject('API_BASE')
 
 const offices = ref([])
 const totalOffices = ref(0)
@@ -228,9 +221,13 @@ const selectedOffice = ref(null)
 const selectedOfficeGips = ref([])
 const searchQuery = ref('')
 const unassignedGips = ref([])
+
 const filteredUnassigned = computed(() => {
-  const q = searchQuery.value.toLowerCase()
-  return unassignedGips.value.filter(g => g.full_name.toLowerCase().includes(q))
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return unassignedGips.value
+  return unassignedGips.value.filter(g => 
+    (g.full_name || `${g.first_name} ${g.family_name}`).toLowerCase().includes(q)
+  )
 })
 
 const officeForm = ref({ name: '', code: '' })
@@ -247,19 +244,24 @@ const fetchAll = async () => {
   loading.value = true
   try {
     const [officesRes, statsRes, yearsRes] = await Promise.all([
-      axios.get(`${API}/gip/offices?year=${selectedYear.value}`),
-      axios.get(`${API}/gip/offices/stats?year=${selectedYear.value}`),
-      axios.get(`${API}/gip/offices/available-years`)
+      axios.get(`${API_BASE}/gip/offices`, { params: { year: selectedYear.value } }),
+      axios.get(`${API_BASE}/gip/offices/stats`, { params: { year: selectedYear.value } }),
+      axios.get(`${API_BASE}/gip/offices/available-years`)
     ])
-    offices.value = officesRes.data.offices
-    totalOffices.value = officesRes.data.totalOffices
+    
+    // Support handling structural response configurations array variants dynamically
+    offices.value = officesRes.data.offices || officesRes.data || []
+    totalOffices.value = officesRes.data.totalOffices || offices.value.length
+    
     Object.assign(yearlyStats, statsRes.data)
-    availableYears.value = yearsRes.data
-    if (!availableYears.value.includes(selectedYear.value)) {
+    availableYears.value = yearsRes.data || []
+    
+    if (availableYears.value.length && !availableYears.value.includes(selectedYear.value)) {
       selectedYear.value = availableYears.value[0] || new Date().getFullYear()
     }
   } catch (e) {
-    Swal.fire('Error', 'Failed to load data.', 'error')
+    console.error(e)
+    Swal.fire('Error', 'Failed to load metadata views.', 'error')
   } finally {
     loading.value = false
   }
@@ -269,17 +271,23 @@ const refreshAll = () => fetchAll()
 
 const fetchUnassigned = async () => {
   try {
-    const res = await axios.get(`${API}/gip/unassigned?year=${selectedYear.value}`)
-    unassignedGips.value = res.data
-  } catch (e) { Swal.fire('Error', 'Could not fetch unassigned GIPs.', 'error') }
+    const res = await axios.get(`${API_BASE}/gip/unassigned`, { params: { year: selectedYear.value } })
+    unassignedGips.value = res.data || []
+  } catch (e) { 
+    console.error(e)
+    Swal.fire('Error', 'Could not fetch unassigned GIP records.', 'error') 
+  }
 }
 
 const openManageModal = async (office) => {
   selectedOffice.value = office
   try {
-    const res = await axios.get(`${API}/gip/offices/${office.id}/gips?year=${selectedYear.value}`)
-    selectedOfficeGips.value = res.data
-  } catch (e) { Swal.fire('Error', 'Could not fetch assigned GIPs.', 'error') }
+    const res = await axios.get(`${API_BASE}/gip/offices/${office.id}/gips`, { params: { year: selectedYear.value } })
+    selectedOfficeGips.value = res.data || []
+  } catch (e) { 
+    console.error(e)
+    Swal.fire('Error', 'Could not fetch assigned GIP listings.', 'error') 
+  }
   showManageModal.value = true
 }
 
@@ -292,17 +300,25 @@ const openAssignModal = (office) => {
 
 const assignGip = async (gip) => {
   try {
-    await axios.post(`${API}/gip/assign`, { gip_employee_id: gip.id, office_id: selectedOffice.value.id })
-    Swal.fire('Success', 'GIP assigned successfully!', 'success')
+    await axios.post(`${API_BASE}/gip/assign`, { gip_employee_id: gip.id, office_id: selectedOffice.value.id })
+    Swal.fire('Success', 'GIP allocated successfully!', 'success')
     await fetchAll()
     closeAssignModal()
-  } catch (e) { Swal.fire('Error', 'Assignment failed.', 'error') }
+    // Refresh manage window view state context seamlessly if stack nested
+    if (showManageModal.value && selectedOffice.value) {
+      const res = await axios.get(`${API_BASE}/gip/offices/${selectedOffice.value.id}/gips`, { params: { year: selectedYear.value } })
+      selectedOfficeGips.value = res.data || []
+    }
+  } catch (e) { 
+    console.error(e)
+    Swal.fire('Error', 'Assignment failed transaction.', 'error') 
+  }
 }
 
 const removeGip = async (gip) => {
   const result = await Swal.fire({
     title: 'Unassign GIP?',
-    text: `Remove ${gip.full_name} from this office?`,
+    text: `Remove ${gip.full_name || `${gip.first_name} ${gip.family_name}`} from this office?`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: 'Yes, unassign',
@@ -310,14 +326,17 @@ const removeGip = async (gip) => {
   })
   if (!result.isConfirmed) return
   try {
-    await axios.post(`${API}/gip/unassign`, { gip_employee_id: gip.id })
-    Swal.fire('Success', 'GIP unassigned.', 'success')
+    await axios.post(`${API_BASE}/gip/unassign`, { gip_employee_id: gip.id })
+    Swal.fire('Success', 'GIP unassigned successfully.', 'success')
     await fetchAll()
     if (showManageModal.value) {
-      const res = await axios.get(`${API}/gip/offices/${selectedOffice.value.id}/gips?year=${selectedYear.value}`)
-      selectedOfficeGips.value = res.data
+      const res = await axios.get(`${API_BASE}/gip/offices/${selectedOffice.value.id}/gips`, { params: { year: selectedYear.value } })
+      selectedOfficeGips.value = res.data || []
     }
-  } catch (e) { Swal.fire('Error', 'Removal failed.', 'error') }
+  } catch (e) { 
+    console.error(e)
+    Swal.fire('Error', 'Unassignment step failure encountered.', 'error') 
+  }
 }
 
 const openAddOfficeModal = () => {
@@ -329,34 +348,35 @@ const openAddOfficeModal = () => {
 const editOffice = (office) => {
   editingOffice.value = true
   selectedOfficeForEdit.value = office
-  officeForm.value = { name: office.name, code: office.code }
+  officeForm.value = { name: office.name, code: office.code || '' }
   showOfficeModal.value = true
 }
 
 const saveOffice = async () => {
-  if (!officeForm.value.name) {
-    Swal.fire('Validation', 'Office name is required.', 'warning')
+  if (!officeForm.value.name.trim()) {
+    Swal.fire('Validation', 'Office name field is required.', 'warning')
     return
   }
   try {
     if (editingOffice.value) {
-      await axios.put(`${API}/offices/${selectedOfficeForEdit.value.id}`, officeForm.value)
-      Swal.fire('Updated!', 'Office updated successfully.', 'success')
+      await axios.put(`${API_BASE}/offices/${selectedOfficeForEdit.value.id}`, officeForm.value)
+      Swal.fire('Updated!', 'Office details changed.', 'success')
     } else {
-      await axios.post(`${API}/offices`, officeForm.value)
-      Swal.fire('Created!', 'Office added successfully.', 'success')
+      await axios.post(`${API_BASE}/offices`, officeForm.value)
+      Swal.fire('Created!', 'Office profile added.', 'success')
     }
     closeOfficeModal()
     fetchAll()
   } catch (err) {
-    Swal.fire('Error', err.response?.data?.message || 'Could not save office.', 'error')
+    console.error(err)
+    Swal.fire('Error', err.response?.data?.message || 'Could not save office metadata configurations.', 'error')
   }
 }
 
 const confirmDeleteOffice = async (office) => {
   const result = await Swal.fire({
     title: 'Delete Office?',
-    text: `Are you sure you want to delete "${office.name}"?`,
+    text: `Are you sure you want to drop "${office.name}" completely?`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Yes, delete',
@@ -364,11 +384,12 @@ const confirmDeleteOffice = async (office) => {
   })
   if (!result.isConfirmed) return
   try {
-    await axios.delete(`${API}/offices/${office.id}`)
-    Swal.fire('Deleted!', 'Office has been removed.', 'success')
+    await axios.delete(`${API_BASE}/offices/${office.id}`)
+    Swal.fire('Deleted!', 'Office node dropped.', 'success')
     fetchAll()
   } catch (e) {
-    Swal.fire('Error', 'Could not delete office.', 'error')
+    console.error(e)
+    Swal.fire('Error', 'Action rejected. Verify references.', 'error')
   }
 }
 
@@ -676,7 +697,6 @@ tr:hover td{
 /* =========================
    MODAL FIX
 ========================= */
-
 .modal-overlay{
   position:fixed;
   inset:0;
@@ -684,41 +704,29 @@ tr:hover td{
   height:100vh;
   background:rgba(15,23,42,.55);
   z-index:9999;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   padding:20px;
-
   overflow-y:auto;
-
   backdrop-filter:blur(4px);
   -webkit-backdrop-filter:blur(4px);
-
   animation:fadeIn .2s ease;
 }
 
 .modal{
   position:relative;
-
   width:100%;
   max-width:540px;
-
   background:#fff;
   border-radius:20px;
-
   overflow:hidden;
-
   display:flex;
   flex-direction:column;
-
   max-height:90vh;
-
   box-shadow:
     0 20px 50px rgba(0,0,0,.25),
     0 2px 8px rgba(0,0,0,.08);
-
   animation:modalPop .22s ease;
 }
 
@@ -726,13 +734,9 @@ tr:hover td{
   display:flex;
   align-items:center;
   justify-content:space-between;
-
   padding:1.2rem 1.5rem;
-
   border-bottom:1px solid #e2e8f0;
-
   background:#fff;
-
   flex-shrink:0;
 }
 
@@ -746,17 +750,13 @@ tr:hover td{
 .modal-close{
   width:36px;
   height:36px;
-
   border:none;
   border-radius:10px;
-
   background:#f8fafc;
   color:#64748b;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   cursor:pointer;
   transition:.2s ease;
 }
@@ -781,12 +781,9 @@ tr:hover td{
   display:flex;
   justify-content:flex-end;
   gap:.75rem;
-
   padding:1rem 1.5rem;
-
   border-top:1px solid #e2e8f0;
   background:#f8fafc;
-
   flex-shrink:0;
 }
 
@@ -803,12 +800,9 @@ tr:hover td{
   display:flex;
   align-items:center;
   gap:.75rem;
-
   padding:.75rem;
-
   border-radius:12px;
   background:#f8fafc;
-
   transition:.2s ease;
 }
 
@@ -824,11 +818,9 @@ tr:hover td{
   width:38px;
   height:38px;
   border-radius:10px;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   font-size:.75rem;
   font-weight:700;
 }
@@ -889,13 +881,10 @@ tr:hover td{
   width:100%;
   margin-top:1rem;
   padding:.75rem;
-
   border-radius:12px;
   border:1px dashed #93c5fd;
-
   background:#eff6ff;
   color:#2563eb;
-
   font-weight:700;
   cursor:pointer;
   transition:.2s ease;
@@ -926,10 +915,8 @@ tr:hover td{
 .search-box input{
   width:100%;
   padding:.75rem .9rem .75rem 2.6rem;
-
   border:1px solid #dbe2ea;
   border-radius:12px;
-
   outline:none;
   font-size:.9rem;
 }
@@ -957,13 +944,10 @@ tr:hover td{
 .form-input{
   width:100%;
   padding:.75rem .9rem;
-
   border:1px solid #dbe2ea;
   border-radius:12px;
-
   outline:none;
   font-size:.9rem;
-
   transition:.2s ease;
 }
 
@@ -974,13 +958,10 @@ tr:hover td{
 
 .btn-primary{
   padding:.7rem 1.3rem;
-
   border:none;
   border-radius:10px;
-
   background:#2563eb;
   color:#fff;
-
   font-weight:700;
   cursor:pointer;
 }
@@ -991,13 +972,10 @@ tr:hover td{
 
 .btn-secondary{
   padding:.7rem 1.3rem;
-
   border:1px solid #dbe2ea;
   border-radius:10px;
-
   background:#fff;
   color:#334155;
-
   font-weight:700;
   cursor:pointer;
 }
@@ -1043,48 +1021,14 @@ tr:hover td{
    RESPONSIVE
 ========================= */
 @media (max-width:768px){
-
-  .gip-office-wrapper{
-    padding:1rem;
-  }
-
-  .header{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .top-row{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .stats-grid{
-    width:100%;
-  }
-
-  .stat-card{
-    flex:1;
-    min-width:unset;
-  }
-
-  .modal{
-    max-width:100%;
-    border-radius:16px;
-  }
-
-  .modal-header,
-  .modal-body,
-  .modal-footer{
-    padding:1rem;
-  }
-
-  .modal-footer{
-    flex-direction:column;
-  }
-
-  .btn-primary,
-  .btn-secondary{
-    width:100%;
-  }
+  .gip-office-wrapper{ padding:1rem; }
+  .header{ flex-direction:column; align-items:flex-start; }
+  .top-row{ flex-direction:column; align-items:flex-start; }
+  .stats-grid{ width:100%; }
+  .stat-card{ flex:1; min-width:unset; }
+  .modal{ max-width:100%; border-radius:16px; }
+  .modal-header, .modal-body, .modal-footer{ padding:1rem; }
+  .modal-footer{ flex-direction:column; }
+  .btn-primary, .btn-secondary{ width:100%; }
 }
 </style>

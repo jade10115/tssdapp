@@ -5,7 +5,7 @@ import LayoutSupply from "../components/layouts/LayoutSupply.vue";
 import LayoutFo from "../components/layouts/LayoutUser.vue";
 
 import Login from "../components/layouts/Login.vue";
-import Home from "../components/layouts/Home.vue"; // ← keep import here
+ // ← keep import here
 
 // ADMIN
 import Dashboard from "../components/layouts/Dashboard.vue";
@@ -43,7 +43,7 @@ import Records from "../components/layouts/Records.vue";
 const routes = [
   // ✅ Standalone full-page routes (NO sidebar)
   { path: "/login", name: "Login", component: Login, meta: { requiresAuth: false } },
-  { path: "/home",  name: "Home",  component: Home,  meta: { requiresAuth: false } }, // ← moved here
+ // ← moved here
 
   // ✅ ADMIN (has sidebar via Layout)
   {
